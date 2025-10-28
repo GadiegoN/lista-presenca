@@ -8,8 +8,9 @@ import clsx from "clsx";
 
 const menu = [
   { label: "Dashboard", icon: ClipboardCheck, href: "/dashboard" },
-  { label: "Turmas", icon: Users, href: "/turmas" },
+  { label: "Jogadores", icon: Users, href: "/jogadores" },
   { label: "Presenças", icon: CalendarDays, href: "/presencas" },
+  { label: "Eventos", icon: CalendarDays, href: "/eventos" },
 ];
 
 export function Sidebar() {
