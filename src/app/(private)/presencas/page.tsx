@@ -25,7 +25,7 @@ export default function PresencasPage() {
     return <div className="p-6 text-gray-500 text-center">Carregando...</div>;
 
   return (
-    <div className="space-y-4 w-[calc(100vw-2rem)] lg:w-[calc(100vw-16rem)] overflow-hidden">
+    <div className="space-y-4 w-[calc(100vw-2rem)] lg:w-[calc(100vw-20rem)] overflow-hidden">
       <WeekNavigator
         weekStart={weekStart}
         onPrev={() => setWeekStart((w) => subWeeks(w, 1))}
