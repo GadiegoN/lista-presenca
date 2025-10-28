@@ -1,72 +1,30 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { db } from "@/lib/firebase";
-import { collection, addDoc, getDocs } from "firebase/firestore";
+import { EventForm } from "./_components/event-form";
+import { EventList } from "./_components/event-list";
+import { useEvents } from "./_components/use-events";
 
 export default function EventosPage() {
-  const [name, setName] = useState("");
-  const [time, setTime] = useState("");
-  const [events, setEvents] = useState<any[]>([]);
-
-  async function addEvent() {
-    if (!name || !time) return;
-    await addDoc(collection(db, "events"), {
-      name,
-      time,
-      date: new Date().toISOString(),
-    });
-    setName("");
-    setTime("");
-    load();
-  }
-
-  async function load() {
-    const snapshot = await getDocs(collection(db, "events"));
-    setEvents(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })));
-  }
-
-  useEffect(() => {
-    load();
-  }, []);
+  const { name, time, setName, setTime, events, addEvent, loading } =
+    useEvents();
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-2xl font-semibold">Eventos</h1>
+    <div className="space-y-4 w-[calc(100vw-20rem)] overflow-x-hidden py-4">
+      <h1 className="text-2xl font-semibold text-gray-800">📅 Eventos</h1>
 
-      <div className="flex gap-2">
-        <input
-          className="border rounded px-3 py-2"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Nome do evento"
-        />
-        <input
-          className="border rounded px-3 py-2"
-          type="time"
-          value={time}
-          onChange={(e) => setTime(e.target.value)}
-        />
-        <button
-          onClick={addEvent}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          Adicionar
-        </button>
-      </div>
+      <EventForm
+        name={name}
+        time={time}
+        setName={setName}
+        setTime={setTime}
+        onAdd={addEvent}
+      />
 
-      <ul className="mt-4 space-y-2">
-        {events.map((e) => (
-          <li
-            key={e.id}
-            className="border rounded p-2 bg-white shadow-sm flex justify-between"
-          >
-            <span>
-              {e.name} — {e.time}
-            </span>
-          </li>
-        ))}
-      </ul>
+      {loading ? (
+        <div className="text-gray-500">Carregando...</div>
+      ) : (
+        <EventList events={events} />
+      )}
     </div>
   );
 }

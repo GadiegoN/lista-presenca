@@ -1,25 +1,37 @@
 "use client";
 
 import ProtectedRoute from "@/components/protected-route";
-import { useAuth } from "@/context/auth-context";
+import { useDashboard } from "./_components/use-dashboard";
+import { DashboardHeader } from "./_components/dashboard-header";
+import { WeeklyChart } from "./_components/weekly-chart";
+import { RankingTable } from "./_components/ranking-table";
 
 export default function DashboardPage() {
-  const { user, logout } = useAuth();
+  const { user, logout, weekDays, ranking, loading, exportToExcel } =
+    useDashboard();
+
+  if (loading) {
+    return (
+      <ProtectedRoute>
+        <div className="p-6 text-center text-gray-600">
+          Carregando resumo semanal...
+        </div>
+      </ProtectedRoute>
+    );
+  }
 
   return (
     <ProtectedRoute>
-      <div className="p-6 space-y-3">
-        <h1 className="text-2xl font-semibold">
-          Bem-vindo, {user?.displayName}
-        </h1>
-        <p className="text-gray-600">{user?.email}</p>
+      <div className="p-6 space-y-6 w-[calc(100vw-20rem)] overflow-x-hidden">
+        <DashboardHeader
+          weekDays={weekDays}
+          onExport={exportToExcel}
+          onLogout={logout}
+        />
 
-        <button
-          onClick={logout}
-          className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
-        >
-          Sair
-        </button>
+        <WeeklyChart ranking={ranking} />
+
+        <RankingTable ranking={ranking} />
       </div>
     </ProtectedRoute>
   );
