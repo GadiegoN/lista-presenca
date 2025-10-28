@@ -43,8 +43,8 @@ export function WeeklyChart({ ranking }: { ranking: any[] }) {
             <Bar
               dataKey="justified"
               stackId="a"
-              fill="#eab308"
-              name="🟡 Justificadas"
+              fill="#3b82f6"
+              name="🔵 Justificadas"
             />
             <Bar dataKey="absent" stackId="a" fill="#ef4444" name="🔴 Faltas" />
           </BarChart>

@@ -13,7 +13,7 @@ export function RankingTable({ ranking }: { ranking: any[] }) {
             <th className="px-2 sm:px-3 py-2 border text-left">Posição</th>
             <th className="px-2 sm:px-3 py-2 border text-left">Jogador</th>
             <th className="px-2 sm:px-3 py-2 border text-center">🟢</th>
-            <th className="px-2 sm:px-3 py-2 border text-center">🟡</th>
+            <th className="px-2 sm:px-3 py-2 border text-center">🔵</th>
             <th className="px-2 sm:px-3 py-2 border text-center">🔴</th>
             <th className="px-2 sm:px-3 py-2 border text-center">
               Aproveitamento
@@ -35,22 +35,30 @@ export function RankingTable({ ranking }: { ranking: any[] }) {
               <td className="px-2 sm:px-3 py-2 font-medium text-gray-800 whitespace-nowrap">
                 {p.name}
               </td>
+
+              {/* 🟢 Presente */}
               <td className="text-center px-2 sm:px-3 py-2 text-green-700 font-semibold">
                 {p.present}
               </td>
-              <td className="text-center px-2 sm:px-3 py-2 text-yellow-700 font-semibold">
+
+              {/* 🔵 Justificado */}
+              <td className="text-center px-2 sm:px-3 py-2 text-blue-700 font-semibold">
                 {p.justified}
               </td>
+
+              {/* 🔴 Ausente */}
               <td className="text-center px-2 sm:px-3 py-2 text-red-700 font-semibold">
                 {p.absent}
               </td>
+
+              {/* % Aproveitamento */}
               <td className="text-center px-2 sm:px-3 py-2">
                 <span
                   className={`px-2 py-1 rounded text-[10px] sm:text-xs font-semibold ${
                     p.rate >= 80
                       ? "bg-green-100 text-green-700"
                       : p.rate >= 50
-                      ? "bg-yellow-100 text-yellow-700"
+                      ? "bg-blue-100 text-blue-700"
                       : "bg-red-100 text-red-700"
                   }`}
                 >

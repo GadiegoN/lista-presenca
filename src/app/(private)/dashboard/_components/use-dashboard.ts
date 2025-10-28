@@ -106,7 +106,7 @@ export function useDashboard() {
       "Posição",
       "Jogador",
       "🟢 Presenças",
-      "🟡 Justificadas",
+      "🔵 Justificadas",
       "🔴 Faltas",
       "Aproveitamento (%)",
     ]);
@@ -132,7 +132,7 @@ export function useDashboard() {
         rateCell.fill = {
           type: "pattern",
           pattern: "solid",
-          fgColor: { argb: "FEF9C3" },
+          fgColor: { argb: "DBEAFE" },
         };
       else
         rateCell.fill = {

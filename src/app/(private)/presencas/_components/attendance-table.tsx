@@ -74,7 +74,7 @@ export function AttendanceTable({
                     status === "PRESENT"
                       ? "bg-green-500"
                       : status === "JUSTIFIED"
-                      ? "bg-yellow-500"
+                      ? "bg-blue-500"
                       : status === "ABSENT"
                       ? "bg-red-500"
                       : "bg-gray-200";
@@ -103,7 +103,7 @@ export function AttendanceTable({
                           onClick={() =>
                             setStatus(p.id, ev.id, date, "JUSTIFIED")
                           }
-                          className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-yellow-100 hover:bg-yellow-200"
+                          className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-blue-100 hover:bg-blue-200"
                           title="Justificou"
                         />
                         <button

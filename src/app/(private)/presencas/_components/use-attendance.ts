@@ -136,6 +136,7 @@ export function useAttendance(weekStart: Date) {
 
     sheet.addRow(headerRow1);
     sheet.addRow(headerRow2);
+
     dayRanges.forEach((r) => {
       sheet.mergeCells(1, r.start, 1, r.end);
       const c = sheet.getCell(1, r.start);
@@ -143,6 +144,7 @@ export function useAttendance(weekStart: Date) {
       c.alignment = { horizontal: "center", vertical: "middle" };
       c.font = { bold: true };
     });
+
     sheet.getCell("A1").value = "Jogador";
     sheet.mergeCells("A1:A2");
     sheet.getCell("A1").alignment = {
@@ -150,6 +152,7 @@ export function useAttendance(weekStart: Date) {
       vertical: "middle",
     };
 
+    // 🔵 Ajuste: ícones e cores
     players.forEach((p) => {
       const row = [p.name];
       weekDays.forEach((day) => {
@@ -160,7 +163,7 @@ export function useAttendance(weekStart: Date) {
             status === "PRESENT"
               ? "🟢"
               : status === "JUSTIFIED"
-              ? "🟡"
+              ? "🔵"
               : status === "ABSENT"
               ? "🔴"
               : "⚪"
@@ -168,6 +171,32 @@ export function useAttendance(weekStart: Date) {
         });
       });
       sheet.addRow(row);
+    });
+
+    // 🔹 Formatação de células coloridas
+    sheet.eachRow((row, rowNumber) => {
+      if (rowNumber <= 2) return; // ignora cabeçalho
+      row.eachCell((cell) => {
+        const val = cell.value;
+        if (val === "🟢")
+          cell.fill = {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: "D1FAE5" }, // verde claro
+          };
+        if (val === "🔵")
+          cell.fill = {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: "DBEAFE" }, // azul claro
+          };
+        if (val === "🔴")
+          cell.fill = {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: "FEE2E2" }, // vermelho claro
+          };
+      });
     });
 
     const buffer = await workbook.xlsx.writeBuffer();
