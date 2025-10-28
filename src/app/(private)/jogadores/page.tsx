@@ -8,13 +8,15 @@ export default function JogadoresPage() {
   const { name, setName, players, addPlayer, loading } = usePlayers();
 
   return (
-    <div className="space-y-4 w-[calc(100vw-20rem)] overflow-x-hidden py-4">
-      <h1 className="text-2xl font-semibold text-gray-800">⚽ Jogadores</h1>
+    <div className="p-4 sm:p-6 space-y-5 w-full lg:w-[calc(100vw-20rem)] overflow-x-hidden">
+      <h1 className="text-2xl sm:text-3xl font-semibold text-gray-800 flex items-center gap-2">
+        ⚽ <span>Jogadores</span>
+      </h1>
 
       <PlayerForm name={name} setName={setName} onAdd={addPlayer} />
 
       {loading ? (
-        <div className="text-gray-500">Carregando...</div>
+        <div className="text-gray-500 text-center py-6">Carregando...</div>
       ) : (
         <PlayerList players={players} />
       )}

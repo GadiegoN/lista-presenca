@@ -7,8 +7,7 @@ import { WeeklyChart } from "./_components/weekly-chart";
 import { RankingTable } from "./_components/ranking-table";
 
 export default function DashboardPage() {
-  const { user, logout, weekDays, ranking, loading, exportToExcel } =
-    useDashboard();
+  const { logout, weekDays, ranking, loading, exportToExcel } = useDashboard();
 
   if (loading) {
     return (
@@ -22,7 +21,7 @@ export default function DashboardPage() {
 
   return (
     <ProtectedRoute>
-      <div className="p-6 space-y-6 w-[calc(100vw-20rem)] overflow-x-hidden">
+      <div className="p-4 sm:p-6 space-y-6 w-full lg:w-[calc(100vw-20rem)] overflow-x-hidden">
         <DashboardHeader
           weekDays={weekDays}
           onExport={exportToExcel}

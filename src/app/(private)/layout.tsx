@@ -13,9 +13,9 @@ export default function PrivateLayout({
     <ProtectedRoute>
       <div className="flex min-h-screen bg-gray-50">
         <Sidebar />
-        <div className="flex-1 ml-64">
+        <div className="flex-1 flex-col lg:ml-64 transition-all">
           <Header />
-          <main className="pt-20 p-6">{children}</main>
+          <main className="mt-16 p-4 sm:p-6">{children}</main>
         </div>
       </div>
     </ProtectedRoute>

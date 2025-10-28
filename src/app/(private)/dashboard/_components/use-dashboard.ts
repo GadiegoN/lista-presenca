@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { startOfWeek, addDays, format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 

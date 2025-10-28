@@ -21,10 +21,11 @@ export default function PresencasPage() {
     exportToExcel,
   } = useAttendance(weekStart);
 
-  if (loading) return <div className="p-6">Carregando...</div>;
+  if (loading)
+    return <div className="p-6 text-gray-500 text-center">Carregando...</div>;
 
   return (
-    <div className="py-4 space-y-4 w-[calc(100vw-20rem)] overflow-x-hidden">
+    <div className="space-y-4 w-[calc(100vw-2rem)] lg:w-[calc(100vw-16rem)] overflow-hidden">
       <WeekNavigator
         weekStart={weekStart}
         onPrev={() => setWeekStart((w) => subWeeks(w, 1))}
@@ -35,7 +36,7 @@ export default function PresencasPage() {
         <ExportButton onExport={exportToExcel} />
       </div>
 
-      <div className="bg-white rounded-xl shadow w-full">
+      <div className="bg-white rounded-xl shadow w-full overflow-hidden">
         <AttendanceTable
           weekDays={weekDays}
           players={players}
