@@ -6,14 +6,14 @@ import {
   collection,
   getDocs,
   query,
-  orderBy,
-  addDoc,
-  doc,
-  updateDoc,
   where,
+  addDoc,
+  updateDoc,
+  doc,
 } from "firebase/firestore";
-import { format } from "date-fns";
+import { startOfWeek, addDays, addWeeks, subWeeks, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Player {
   id: string;
@@ -23,7 +23,6 @@ interface Player {
 interface Event {
   id: string;
   name: string;
-  date: string;
   time: string;
 }
 
@@ -31,16 +30,27 @@ interface Attendance {
   id: string;
   playerId: string;
   eventId: string;
+  date: string;
   status: "PRESENT" | "JUSTIFIED" | "ABSENT";
 }
 
 export default function PresencasPage() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
-  const [selectedEvent, setSelectedEvent] = useState<string>("");
   const [attendances, setAttendances] = useState<Attendance[]>([]);
+  const [weekStart, setWeekStart] = useState<Date>(
+    startOfWeek(new Date(), { weekStartsOn: 1 })
+  );
+  const [weekDays, setWeekDays] = useState<Date[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // 🔹 Atualiza dias da semana com base em weekStart
+  useEffect(() => {
+    const days = Array.from({ length: 7 }).map((_, i) => addDays(weekStart, i));
+    setWeekDays(days);
+  }, [weekStart]);
+
+  // 🔹 Carrega jogadores, eventos e presenças
   useEffect(() => {
     async function loadData() {
       const playersSnap = await getDocs(collection(db, "players"));
@@ -52,128 +62,180 @@ export default function PresencasPage() {
       setEvents(
         eventsSnap.docs.map((d) => ({ id: d.id, ...d.data() })) as Event[]
       );
+
+      const attendSnap = await getDocs(collection(db, "attendances"));
+      setAttendances(
+        attendSnap.docs.map((d) => ({ id: d.id, ...d.data() })) as Attendance[]
+      );
+
       setLoading(false);
     }
     loadData();
   }, []);
 
-  useEffect(() => {
-    async function loadAttendances() {
-      if (!selectedEvent) return;
-      const q = query(
-        collection(db, "attendances"),
-        where("eventId", "==", selectedEvent)
-      );
-      const snapshot = await getDocs(q);
-      setAttendances(
-        snapshot.docs.map((d) => ({ id: d.id, ...d.data() })) as Attendance[]
-      );
-    }
-    loadAttendances();
-  }, [selectedEvent]);
-
-  async function setStatus(playerId: string, status: Attendance["status"]) {
-    if (!selectedEvent) return alert("Selecione um evento primeiro");
-    const existing = attendances.find((a) => a.playerId === playerId);
+  // 🔹 Atualiza status no Firestore
+  async function setStatus(
+    playerId: string,
+    eventId: string,
+    date: string,
+    status: Attendance["status"]
+  ) {
+    const existing = attendances.find(
+      (a) => a.playerId === playerId && a.eventId === eventId && a.date === date
+    );
 
     if (existing) {
       await updateDoc(doc(db, "attendances", existing.id), { status });
+      setAttendances((prev) =>
+        prev.map((a) => (a.id === existing.id ? { ...a, status } : a))
+      );
     } else {
-      await addDoc(collection(db, "attendances"), {
+      const docRef = await addDoc(collection(db, "attendances"), {
         playerId,
-        eventId: selectedEvent,
+        eventId,
+        date,
         status,
-        createdAt: new Date(),
       });
+      setAttendances((prev) => [
+        ...prev,
+        { id: docRef.id, playerId, eventId, date, status },
+      ]);
     }
+  }
 
-    setAttendances((prev) => {
-      const updated = prev.filter((a) => a.playerId !== playerId);
-      return [
-        ...updated,
-        { id: existing?.id || "new", playerId, eventId: selectedEvent, status },
-      ];
-    });
+  function getStatus(playerId: string, eventId: string, date: string) {
+    return attendances.find(
+      (a) => a.playerId === playerId && a.eventId === eventId && a.date === date
+    )?.status;
+  }
+
+  // 🔹 Navegação de semanas
+  function previousWeek() {
+    setWeekStart((prev) => subWeeks(prev, 1));
+  }
+  function nextWeek() {
+    setWeekStart((prev) => addWeeks(prev, 1));
   }
 
   if (loading) return <div className="p-6">Carregando...</div>;
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Controle de Presenças</h1>
+    <div className="p-4 space-y-4">
+      <div className="flex items-center justify-between">
+        <button
+          onClick={previousWeek}
+          className="flex items-center gap-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded transition"
+        >
+          <ChevronLeft className="w-4 h-4" /> Semana anterior
+        </button>
 
-      <select
-        className="border rounded p-2"
-        value={selectedEvent}
-        onChange={(e) => setSelectedEvent(e.target.value)}
-      >
-        <option value="">Selecione um evento</option>
-        {events.map((ev) => (
-          <option key={ev.id} value={ev.id}>
-            {ev.name} - {ev.time} (
-            {format(new Date(ev.date), "dd/MM/yyyy", { locale: ptBR })})
-          </option>
-        ))}
-      </select>
+        <h1 className="text-2xl font-semibold text-gray-800 text-center">
+          📅 Semana de {format(weekDays[0], "dd/MM", { locale: ptBR })} a{" "}
+          {format(weekDays[6], "dd/MM", { locale: ptBR })}
+        </h1>
 
-      {!selectedEvent && <p>Selecione um evento para ver as presenças.</p>}
+        <button
+          onClick={nextWeek}
+          className="flex items-center gap-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded transition"
+        >
+          Próxima semana <ChevronRight className="w-4 h-4" />
+        </button>
+      </div>
 
-      {selectedEvent && (
-        <div className="bg-white rounded-xl shadow p-4">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="border-b">
-                <th className="text-left py-2">Jogador</th>
-                <th className="text-center py-2">Status</th>
-                <th className="text-center py-2">Ações</th>
+      <div className="overflow-x-auto bg-white rounded-xl shadow">
+        <table className="min-w-full border-collapse">
+          <thead>
+            <tr className="bg-gray-100 text-gray-700">
+              <th className="px-3 py-2 border">Jogador</th>
+              {weekDays.map((day) => (
+                <th
+                  key={day.toISOString()}
+                  colSpan={events.length}
+                  className="border px-3 py-2 text-center"
+                >
+                  {format(day, "EEE", { locale: ptBR }).toUpperCase()}
+                </th>
+              ))}
+            </tr>
+            <tr className="bg-gray-50">
+              <th></th>
+              {weekDays.flatMap((day) =>
+                events.map((ev) => (
+                  <th
+                    key={`${day}-${ev.id}`}
+                    className="border px-2 py-1 text-xs text-gray-500"
+                  >
+                    {ev.name} ({ev.time})
+                  </th>
+                ))
+              )}
+            </tr>
+          </thead>
+
+          <tbody>
+            {players.map((p) => (
+              <tr key={p.id} className="hover:bg-gray-50">
+                <td className="border px-3 py-2 font-medium text-gray-700">
+                  {p.name}
+                </td>
+                {weekDays.flatMap((day) =>
+                  events.map((ev) => {
+                    const date = format(day, "yyyy-MM-dd");
+                    const status = getStatus(p.id, ev.id, date);
+
+                    const color =
+                      status === "PRESENT"
+                        ? "bg-green-500"
+                        : status === "JUSTIFIED"
+                        ? "bg-yellow-500"
+                        : status === "ABSENT"
+                        ? "bg-red-500"
+                        : "bg-gray-200";
+
+                    return (
+                      <td
+                        key={`${p.id}-${ev.id}-${date}`}
+                        className="border text-center py-1"
+                      >
+                        <div className="flex justify-center gap-1">
+                          <div
+                            className={`w-4 h-4 rounded-full ${color}`}
+                            title={status || "Sem registro"}
+                          ></div>
+                        </div>
+
+                        <div className="flex justify-center gap-1 mt-1">
+                          <button
+                            onClick={() =>
+                              setStatus(p.id, ev.id, date, "PRESENT")
+                            }
+                            className="w-5 h-5 rounded-full bg-green-100 hover:bg-green-200"
+                            title="Foi"
+                          />
+                          <button
+                            onClick={() =>
+                              setStatus(p.id, ev.id, date, "JUSTIFIED")
+                            }
+                            className="w-5 h-5 rounded-full bg-yellow-100 hover:bg-yellow-200"
+                            title="Justificou"
+                          />
+                          <button
+                            onClick={() =>
+                              setStatus(p.id, ev.id, date, "ABSENT")
+                            }
+                            className="w-5 h-5 rounded-full bg-red-100 hover:bg-red-200"
+                            title="Faltou"
+                          />
+                        </div>
+                      </td>
+                    );
+                  })
+                )}
               </tr>
-            </thead>
-            <tbody>
-              {players.map((p) => {
-                const attendance = attendances.find((a) => a.playerId === p.id);
-                const status = attendance?.status || "ABSENT";
-
-                return (
-                  <tr key={p.id} className="border-b hover:bg-gray-50">
-                    <td className="py-2">{p.name}</td>
-                    <td className="text-center">
-                      <div
-                        className={`mx-auto w-4 h-4 rounded-full ${
-                          status === "PRESENT"
-                            ? "bg-green-500"
-                            : status === "JUSTIFIED"
-                            ? "bg-yellow-500"
-                            : "bg-red-500"
-                        }`}
-                      ></div>
-                    </td>
-                    <td className="text-center space-x-2">
-                      <button
-                        onClick={() => setStatus(p.id, "PRESENT")}
-                        className="px-2 py-1 bg-green-100 text-green-700 rounded text-sm"
-                      >
-                        Foi
-                      </button>
-                      <button
-                        onClick={() => setStatus(p.id, "JUSTIFIED")}
-                        className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-sm"
-                      >
-                        Justificou
-                      </button>
-                      <button
-                        onClick={() => setStatus(p.id, "ABSENT")}
-                        className="px-2 py-1 bg-red-100 text-red-700 rounded text-sm"
-                      >
-                        Faltou
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
