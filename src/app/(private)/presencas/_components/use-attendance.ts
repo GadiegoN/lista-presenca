@@ -59,9 +59,25 @@ export function useAttendance(weekStart: Date) {
         getDocs(attendancesQuery),
       ]);
 
-      setPlayers(pSnap.docs.map((d) => ({ id: d.id, ...d.data() })));
-      setEvents(eSnap.docs.map((d) => ({ id: d.id, ...d.data() })));
-      setAttendances(aSnap.docs.map((d) => ({ id: d.id, ...d.data() })));
+      const playersData = pSnap.docs
+        .map((d) => {
+          const data = d.data();
+          return { id: d.id, active: data.active ?? true, ...data };
+        })
+        .filter((p) => p.active);
+
+      const eventsData = eSnap.docs
+        .map((d) => ({ id: d.id, ...d.data() }))
+        .sort((a: any, b: any) => a.time.localeCompare(b.time));
+
+      const attendancesData = aSnap.docs.map((d) => ({
+        id: d.id,
+        ...d.data(),
+      }));
+
+      setPlayers(playersData);
+      setEvents(eventsData);
+      setAttendances(attendancesData);
       setLoading(false);
     }
 

@@ -7,9 +7,15 @@ interface Props {
   players: any[];
   onUpdate: (id: string, newName: string) => void;
   onDelete: (id: string) => void;
+  onToggleActive: (id: string, current: boolean) => void;
 }
 
-export function PlayerList({ players, onUpdate, onDelete }: Props) {
+export function PlayerList({
+  players,
+  onUpdate,
+  onDelete,
+  onToggleActive,
+}: Props) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
 
@@ -54,6 +60,16 @@ export function PlayerList({ players, onUpdate, onDelete }: Props) {
             <>
               <span className="font-medium truncate">{p.name}</span>
               <div className="flex gap-2">
+                <button
+                  onClick={() => onToggleActive(p.id, p.active)}
+                  className={`w-5 h-5 rounded-full border ${
+                    p.active
+                      ? "bg-green-500 border-green-500"
+                      : "bg-gray-300 border-gray-300"
+                  }`}
+                  title={p.active ? "Ativo" : "Inativo"}
+                />
+
                 <button
                   onClick={() => {
                     setEditingId(p.id);

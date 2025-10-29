@@ -35,42 +35,79 @@ export function useDashboard() {
   const [weekDays, setWeekDays] = useState<Date[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // 🔹 Calcula os dias da semana atual
   useEffect(() => {
     const start = startOfWeek(new Date(), { weekStartsOn: 1 });
     const days = Array.from({ length: 7 }).map((_, i) => addDays(start, i));
     setWeekDays(days);
   }, []);
 
-  // 🔹 Carrega dados do Firestore (somente do usuário logado)
   useEffect(() => {
     if (!user) return;
+
     async function loadData() {
+      setLoading(true);
+
+      const playersQuery = query(
+        collection(db, "players"),
+        where("userId", "==", user?.uid)
+      );
+      const eventsQuery = query(
+        collection(db, "events"),
+        where("userId", "==", user?.uid)
+      );
+      const attendancesQuery = query(
+        collection(db, "attendances"),
+        where("userId", "==", user?.uid)
+      );
+
       const [pSnap, eSnap, aSnap] = await Promise.all([
-        getDocs(
-          query(collection(db, "players"), where("userId", "==", user?.uid))
-        ),
-        getDocs(
-          query(collection(db, "events"), where("userId", "==", user?.uid))
-        ),
-        getDocs(
-          query(collection(db, "attendances"), where("userId", "==", user?.uid))
-        ),
+        getDocs(playersQuery),
+        getDocs(eventsQuery),
+        getDocs(attendancesQuery),
       ]);
 
-      setPlayers(
-        pSnap.docs.map((d) => ({ id: d.id, ...d.data() })) as Player[]
-      );
-      setEvents(eSnap.docs.map((d) => ({ id: d.id, ...d.data() })) as Event[]);
-      setAttendances(
-        aSnap.docs.map((d) => ({ id: d.id, ...d.data() })) as Attendance[]
-      );
+      const playersData: Player[] = pSnap.docs
+        .map((d) => {
+          const data = d.data() as Player & { active?: boolean };
+          return {
+            id: d.id,
+            name: data.name,
+            active: data.active ?? true,
+          };
+        })
+        .filter((p) => p.active);
+
+      const eventsData: Event[] = eSnap.docs
+        .map((d) => {
+          const data = d.data() as Event;
+          return {
+            id: d.id,
+            name: data.name,
+            time: data.time,
+          };
+        })
+        .sort((a, b) => a.time.localeCompare(b.time));
+
+      const attendancesData: Attendance[] = aSnap.docs.map((d) => {
+        const data = d.data() as Attendance;
+        return {
+          id: d.id,
+          playerId: data.playerId,
+          eventId: data.eventId,
+          date: data.date,
+          status: data.status,
+        };
+      });
+
+      setPlayers(playersData);
+      setEvents(eventsData);
+      setAttendances(attendancesData);
       setLoading(false);
     }
+
     loadData();
   }, [user]);
 
-  // 🔹 Calcula o resumo semanal por jogador
   function getWeeklySummary(playerId: string) {
     let present = 0,
       justified = 0,
@@ -92,12 +129,10 @@ export function useDashboard() {
     return { present, justified, absent, rate };
   }
 
-  // 🔹 Monta o ranking
   const ranking = players
     .map((p) => ({ ...p, ...getWeeklySummary(p.id) }))
     .sort((a, b) => b.rate - a.rate);
 
-  // 🔹 Exportar para Excel
   async function exportToExcel() {
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet("Resumo Semanal");

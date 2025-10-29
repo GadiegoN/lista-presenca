@@ -35,6 +35,12 @@ export function usePlayers() {
     await load();
   }
 
+  async function toggleActive(id: string, currentActive?: boolean) {
+    const newValue = currentActive === undefined ? false : !currentActive;
+    await updateDoc(doc(db, "players", id), { active: newValue });
+    await load();
+  }
+
   async function updatePlayer(id: string, newName: string) {
     if (!newName.trim()) return;
     await updateDoc(doc(db, "players", id), { name: newName });
@@ -59,7 +65,13 @@ export function usePlayers() {
     );
 
     const snapshot = await getDocs(q);
-    setPlayers(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })));
+    setPlayers(
+      snapshot.docs.map((d) => {
+        const data = d.data();
+        return { id: d.id, active: data.active ?? true, ...data };
+      })
+    );
+
     setLoading(false);
   }
 
@@ -72,6 +84,7 @@ export function usePlayers() {
     setName,
     players,
     addPlayer,
+    toggleActive,
     updatePlayer,
     deletePlayer,
     order,

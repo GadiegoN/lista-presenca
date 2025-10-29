@@ -12,6 +12,7 @@ export default function JogadoresPage() {
     setName,
     players,
     addPlayer,
+    toggleActive,
     updatePlayer,
     deletePlayer,
     order,
@@ -75,6 +76,7 @@ export default function JogadoresPage() {
           players={filteredPlayers}
           onUpdate={updatePlayer}
           onDelete={deletePlayer}
+          onToggleActive={toggleActive}
         />
       )}
     </div>
