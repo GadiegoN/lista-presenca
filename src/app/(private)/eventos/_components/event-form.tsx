@@ -22,6 +22,7 @@ export function EventForm({ name, time, setName, setTime, onAdd }: Props) {
         className="border rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto"
         type="time"
         value={time}
+        placeholder="Horario do evento"
         onChange={(e) => setTime(e.target.value)}
       />
 
