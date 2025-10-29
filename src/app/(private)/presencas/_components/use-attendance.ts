@@ -62,9 +62,16 @@ export function useAttendance(weekStart: Date) {
       const playersData = pSnap.docs
         .map((d) => {
           const data = d.data();
-          return { id: d.id, active: data.active ?? true, ...data };
+          return {
+            id: d.id,
+            name: data.name,
+            active: data.active ?? true,
+            order: data.order ?? 9999,
+            ...data,
+          };
         })
-        .filter((p) => p.active);
+        .filter((p) => p.active)
+        .sort((a, b) => a.order - b.order);
 
       const eventsData = eSnap.docs
         .map((d) => ({ id: d.id, ...d.data() }))
@@ -83,6 +90,15 @@ export function useAttendance(weekStart: Date) {
 
     loadData();
   }, [user]);
+
+  async function reorderPlayers(updatedPlayers: any[]) {
+    setPlayers(updatedPlayers);
+
+    for (let i = 0; i < updatedPlayers.length; i++) {
+      const p = updatedPlayers[i];
+      await updateDoc(doc(db, "players", p.id), { order: i });
+    }
+  }
 
   async function setStatus(
     playerId: string,
@@ -245,6 +261,7 @@ export function useAttendance(weekStart: Date) {
     players,
     events,
     attendances,
+    reorderPlayers,
     setStatus,
     exportToExcel,
   };
