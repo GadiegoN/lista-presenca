@@ -10,6 +10,7 @@ import {
   doc,
   query,
   where,
+  orderBy,
 } from "firebase/firestore";
 import { addDays, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -40,10 +41,13 @@ export function useAttendance(weekStart: Date) {
         collection(db, "players"),
         where("userId", "==", user?.uid)
       );
+
       const eventsQuery = query(
         collection(db, "events"),
-        where("userId", "==", user?.uid)
+        where("userId", "==", user?.uid),
+        orderBy("time", "asc")
       );
+
       const attendancesQuery = query(
         collection(db, "attendances"),
         where("userId", "==", user?.uid)
