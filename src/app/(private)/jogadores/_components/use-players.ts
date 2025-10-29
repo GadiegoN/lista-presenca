@@ -6,6 +6,9 @@ import {
   collection,
   addDoc,
   getDocs,
+  updateDoc,
+  deleteDoc,
+  doc,
   query,
   where,
   orderBy,
@@ -17,6 +20,7 @@ export function usePlayers() {
   const [name, setName] = useState("");
   const [players, setPlayers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [order, setOrder] = useState("createdAt_desc");
 
   async function addPlayer() {
     if (!name.trim() || !user?.uid) return;
@@ -31,14 +35,27 @@ export function usePlayers() {
     await load();
   }
 
+  async function updatePlayer(id: string, newName: string) {
+    if (!newName.trim()) return;
+    await updateDoc(doc(db, "players", id), { name: newName });
+    await load();
+  }
+
+  async function deletePlayer(id: string) {
+    await deleteDoc(doc(db, "players", id));
+    await load();
+  }
+
   async function load() {
     if (!user?.uid) return;
     setLoading(true);
 
+    const [field, direction] = order.split("_");
+
     const q = query(
       collection(db, "players"),
       where("userId", "==", user.uid),
-      orderBy("createdAt", "desc")
+      orderBy(field, direction as "asc" | "desc")
     );
 
     const snapshot = await getDocs(q);
@@ -48,7 +65,17 @@ export function usePlayers() {
 
   useEffect(() => {
     load();
-  }, [user]);
+  }, [user, order]);
 
-  return { name, setName, players, addPlayer, loading };
+  return {
+    name,
+    setName,
+    players,
+    addPlayer,
+    updatePlayer,
+    deletePlayer,
+    order,
+    setOrder,
+    loading,
+  };
 }
