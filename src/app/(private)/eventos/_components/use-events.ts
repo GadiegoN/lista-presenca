@@ -6,6 +6,9 @@ import {
   collection,
   addDoc,
   getDocs,
+  updateDoc,
+  deleteDoc,
+  doc,
   query,
   where,
   orderBy,
@@ -34,6 +37,16 @@ export function useEvents() {
     await load();
   }
 
+  async function updateEvent(id: string, newName: string, newTime: string) {
+    await updateDoc(doc(db, "events", id), { name: newName, time: newTime });
+    await load();
+  }
+
+  async function deleteEvent(id: string) {
+    await deleteDoc(doc(db, "events", id));
+    await load();
+  }
+
   async function load() {
     if (!user?.uid) return;
     setLoading(true);
@@ -41,7 +54,7 @@ export function useEvents() {
     const q = query(
       collection(db, "events"),
       where("userId", "==", user.uid),
-      orderBy("date", "desc")
+      orderBy("time", "asc")
     );
 
     const snapshot = await getDocs(q);
@@ -53,5 +66,15 @@ export function useEvents() {
     load();
   }, [user]);
 
-  return { name, time, setName, setTime, events, addEvent, loading };
+  return {
+    name,
+    time,
+    setName,
+    setTime,
+    events,
+    addEvent,
+    updateEvent,
+    deleteEvent,
+    loading,
+  };
 }

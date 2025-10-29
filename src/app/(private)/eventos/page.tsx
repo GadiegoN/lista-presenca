@@ -5,8 +5,17 @@ import { EventList } from "./_components/event-list";
 import { useEvents } from "./_components/use-events";
 
 export default function EventosPage() {
-  const { name, time, setName, setTime, events, addEvent, loading } =
-    useEvents();
+  const {
+    name,
+    time,
+    setName,
+    setTime,
+    events,
+    addEvent,
+    updateEvent,
+    deleteEvent,
+    loading,
+  } = useEvents();
 
   return (
     <div className="p-4 sm:p-6 space-y-5 w-full lg:w-[calc(100vw-20rem)] overflow-x-hidden">
@@ -25,7 +34,11 @@ export default function EventosPage() {
       {loading ? (
         <div className="text-gray-500 text-center py-6">Carregando...</div>
       ) : (
-        <EventList events={events} />
+        <EventList
+          events={events}
+          onUpdate={updateEvent}
+          onDelete={deleteEvent}
+        />
       )}
     </div>
   );
