@@ -6,6 +6,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  TouchSensor,
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -28,7 +29,7 @@ interface Props {
 }
 
 export function PlayerOrderList({ players, onReorder }: Props) {
-  const sensors = useSensors(useSensor(PointerSensor));
+  const sensors = useSensors(useSensor(PointerSensor), useSensor(TouchSensor));
 
   function handleDragEnd(event: any) {
     const { active, over } = event;
@@ -67,6 +68,7 @@ function SortablePlayer({ id, name }: { id: string; name: string }) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+    touchAction: "none",
   };
 
   return (
