@@ -87,7 +87,15 @@ export function AttendanceTable({
                       <div className="flex justify-center gap-1">
                         <div
                           className={`w-3 h-3 sm:w-4 sm:h-4 rounded-full ${color}`}
-                          title={status || "Sem registro"}
+                          title={
+                            status
+                              ? status === "PRESENT"
+                                ? "Foi"
+                                : status === "JUSTIFIED"
+                                ? "Justificou"
+                                : "Faltou"
+                              : "Sem registro"
+                          }
                         />
                       </div>
 
