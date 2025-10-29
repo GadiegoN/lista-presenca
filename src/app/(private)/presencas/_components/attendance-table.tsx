@@ -1,6 +1,6 @@
 "use client";
 
-import { format } from "date-fns";
+import { format, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 export function AttendanceTable({
@@ -16,6 +16,8 @@ export function AttendanceTable({
         a.playerId === playerId && a.eventId === eventId && a.date === date
     )?.status;
   }
+
+  const now = new Date();
 
   return (
     <div className="overflow-x-auto overflow-y-hidden relative pb-2 sm:rounded-b-xl">
@@ -38,15 +40,32 @@ export function AttendanceTable({
 
           <tr className="bg-gray-50 text-xs text-gray-600">
             <th className="border sticky left-0 bg-gray-50 z-10"></th>
+
             {weekDays.flatMap((day: Date) =>
-              events.map((ev: any) => (
-                <th
-                  key={`${day}-${ev.id}`}
-                  className="border px-1 py-1 text-[11px] text-gray-500 whitespace-nowrap"
-                >
-                  {ev.time}
-                </th>
-              ))
+              events.map((ev: any) => {
+                const eventDate = new Date(
+                  `${format(day, "yyyy-MM-dd")}T${ev.time}`
+                );
+
+                const isToday = isSameDay(day, now);
+                const isCurrent =
+                  isToday &&
+                  now.getHours() === parseInt(ev.time.split(":")[0]) &&
+                  now.getMinutes() >= 0;
+
+                return (
+                  <th
+                    key={`${day}-${ev.id}`}
+                    className={`border px-1 py-1 text-[11px] text-gray-500 whitespace-nowrap transition-colors ${
+                      isCurrent
+                        ? "bg-blue-100 font-semibold text-blue-700"
+                        : "bg-gray-50"
+                    }`}
+                  >
+                    {ev.time}
+                  </th>
+                );
+              })
             )}
           </tr>
         </thead>
