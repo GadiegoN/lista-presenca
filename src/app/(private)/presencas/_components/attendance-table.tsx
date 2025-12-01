@@ -81,6 +81,7 @@ export function AttendanceTable({
                 events.map((ev: any) => {
                   const date = format(day, "yyyy-MM-dd");
                   const status = getStatus(p.id, ev.id, date);
+
                   const color =
                     status === "PRESENT"
                       ? "bg-green-500"
@@ -113,20 +114,39 @@ export function AttendanceTable({
                       <div className="flex justify-center gap-1 mt-1">
                         <button
                           onClick={() =>
-                            setStatus(p.id, ev.id, date, "PRESENT")
+                            setStatus(
+                              p.id,
+                              ev.id,
+                              date,
+                              status === "PRESENT" ? null : "PRESENT"
+                            )
                           }
                           className="w-4 h-4 rounded-full bg-green-100 hover:bg-green-200"
                           title="Foi"
                         />
+
                         <button
                           onClick={() =>
-                            setStatus(p.id, ev.id, date, "JUSTIFIED")
+                            setStatus(
+                              p.id,
+                              ev.id,
+                              date,
+                              status === "JUSTIFIED" ? null : "JUSTIFIED"
+                            )
                           }
                           className="w-4 h-4 rounded-full bg-blue-100 hover:bg-blue-200"
                           title="Justificou"
                         />
+
                         <button
-                          onClick={() => setStatus(p.id, ev.id, date, "ABSENT")}
+                          onClick={() =>
+                            setStatus(
+                              p.id,
+                              ev.id,
+                              date,
+                              status === "ABSENT" ? null : "ABSENT"
+                            )
+                          }
                           className="w-4 h-4 rounded-full bg-red-100 hover:bg-red-200"
                           title="Faltou"
                         />
